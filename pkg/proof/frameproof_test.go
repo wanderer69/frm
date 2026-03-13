@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/wanderer69/frm/internal/frame"
-	"github.com/wanderer69/frm/internal/value"
-	valueType "github.com/wanderer69/frm/internal/value_types"
+	"github.com/wanderer69/frm/pkg/frame"
+	"github.com/wanderer69/frm/pkg/value"
+	valueType "github.com/wanderer69/frm/pkg/value_types"
 )
 
 func equalBindingsSlices(a, b []map[string]value.Value) bool {

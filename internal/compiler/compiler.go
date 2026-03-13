@@ -3,7 +3,7 @@ package compiler
 import (
 	"github.com/wanderer69/frm/internal/ast"
 	"github.com/wanderer69/frm/internal/bytecode"
-	valueType "github.com/wanderer69/frm/internal/value_types"
+	valueType "github.com/wanderer69/frm/pkg/value_types"
 )
 
 //

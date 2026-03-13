@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/wanderer69/frm/internal/value"
+import "github.com/wanderer69/frm/pkg/value"
 
 //
 // ====== AST ======

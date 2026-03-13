@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"github.com/wanderer69/frm/internal/bytecode"
-	"github.com/wanderer69/frm/internal/frame"
-	"github.com/wanderer69/frm/internal/list"
-	"github.com/wanderer69/frm/internal/value"
+	"github.com/wanderer69/frm/pkg/frame"
+	"github.com/wanderer69/frm/pkg/list"
+	"github.com/wanderer69/frm/pkg/value"
 )
 
 func Cmp(a value.Value, b value.Value) bool {

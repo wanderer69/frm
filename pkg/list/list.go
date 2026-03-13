@@ -5,7 +5,7 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/wanderer69/frm/internal/value"
+	"github.com/wanderer69/frm/pkg/value"
 )
 
 type ListItem struct {

@@ -9,10 +9,10 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/wanderer69/frm/internal/frame"
-	"github.com/wanderer69/frm/internal/list"
-	"github.com/wanderer69/frm/internal/value"
-	valueType "github.com/wanderer69/frm/internal/value_types"
+	"github.com/wanderer69/frm/pkg/frame"
+	"github.com/wanderer69/frm/pkg/list"
+	"github.com/wanderer69/frm/pkg/value"
+	valueType "github.com/wanderer69/frm/pkg/value_types"
 )
 
 // KnowledgeBase is a collection of frames.

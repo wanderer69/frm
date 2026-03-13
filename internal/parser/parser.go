@@ -6,7 +6,7 @@ import (
 
 	"github.com/wanderer69/frm/internal/ast"
 	"github.com/wanderer69/frm/internal/lexer"
-	valueType "github.com/wanderer69/frm/internal/value_types"
+	valueType "github.com/wanderer69/frm/pkg/value_types"
 )
 
 //

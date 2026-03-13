@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/wanderer69/frm/internal/bytecode"
-	"github.com/wanderer69/frm/internal/frame"
-	"github.com/wanderer69/frm/internal/list"
-	"github.com/wanderer69/frm/internal/proof"
-	"github.com/wanderer69/frm/internal/value"
-	valueType "github.com/wanderer69/frm/internal/value_types"
+	"github.com/wanderer69/frm/pkg/frame"
+	"github.com/wanderer69/frm/pkg/list"
+	"github.com/wanderer69/frm/pkg/proof"
+	"github.com/wanderer69/frm/pkg/value"
+	valueType "github.com/wanderer69/frm/pkg/value_types"
 )
 
 // internal

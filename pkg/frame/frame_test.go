@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/wanderer69/frm/internal/frame"
-	valueType "github.com/wanderer69/frm/internal/value_types"
+	"github.com/wanderer69/frm/pkg/frame"
+	valueType "github.com/wanderer69/frm/pkg/value_types"
 )
 
 // Tests

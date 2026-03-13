@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/wanderer69/frm/internal/value"
+	"github.com/wanderer69/frm/pkg/value"
 )
 
 //

@@ -5,8 +5,8 @@ import (
 	"hash/fnv"
 	"unsafe"
 
-	"github.com/wanderer69/frm/internal/list"
-	"github.com/wanderer69/frm/internal/value"
+	"github.com/wanderer69/frm/pkg/list"
+	"github.com/wanderer69/frm/pkg/value"
 )
 
 // Entry represents a node in the linked list for collision resolution.
