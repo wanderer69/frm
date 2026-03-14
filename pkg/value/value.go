@@ -14,7 +14,7 @@ const (
 	ValueTypeBool
 )
 
-func (vt ValueType) String() string {
+func (vt ValueType) ToString() string {
 	switch vt {
 	case ValueTypeInt:
 		return "Int"

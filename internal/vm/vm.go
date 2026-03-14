@@ -59,7 +59,7 @@ func Type(args []value.Value) ([]value.Value, error) {
 	if len(args) != 1 {
 		return []value.Value{valueType.ValueNil}, fmt.Errorf("unexpected len args")
 	}
-	return []value.Value{&valueType.ValueString{String: args[0].Type().String()}}, nil
+	return []value.Value{&valueType.ValueString{String: args[0].Type().ToString()}}, nil
 }
 
 func Inc(args []value.Value) ([]value.Value, error) {

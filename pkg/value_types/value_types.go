@@ -131,6 +131,30 @@ func Op(op string, a value.Value, b value.Value) value.Value {
 	return ValueNil
 }
 
+func Bool(v any) bool {
+	return v.(bool)
+}
+
+func String(v any) string {
+	return v.(string)
+}
+
+func Int(v any) int {
+	return v.(int)
+}
+
+func Float(v any) float64 {
+	return v.(float64)
+}
+
+func Frame(v any) *frame.Frame {
+	return v.(*frame.Frame)
+}
+
+func List(v any) *list.List {
+	return v.(*list.List)
+}
+
 type valueNil struct {
 }
 
