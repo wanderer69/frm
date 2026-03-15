@@ -1,6 +1,9 @@
 package compiler
 
 import (
+	"fmt"
+
+	"github.com/google/uuid"
 	"github.com/wanderer69/frm/internal/ast"
 	"github.com/wanderer69/frm/internal/bytecode"
 	valueType "github.com/wanderer69/frm/pkg/value_types"
@@ -28,10 +31,25 @@ func (c *Compiler) Compile(prog *ast.Program) []*bytecode.Chunk {
 	for _, d := range prog.Decls {
 		c.chunk = bytecode.NewChunk()
 		c.nextIter = 0
-		switch d.(type) {
+		switch v := d.(type) {
 		case *ast.FramesDecl:
+			frms := v
+			c.chunk.SortedArgs = make([]int, len(c.chunk.Locals))
+			i := 0
+			for range c.chunk.Locals {
+				c.chunk.SortedArgs[i] = i
+				i++
+			}
+			for _, st := range frms.Body {
+				c.compileStmt(st)
+			}
+			c.chunk.Emit(bytecode.OpReturn, 0)
+			c.chunk.Name = fmt.Sprintf("init_%s", uuid.NewString())
+			c.chunk.LocalNumbers = c.nextLocal
+			c.chunks = append(c.chunks, c.chunk)
+
 		case *ast.FunctionDecl:
-			fn := d.(*ast.FunctionDecl)
+			fn := v //d.(*ast.FunctionDecl)
 			for i, p := range fn.Params {
 				c.chunk.Locals[p] = i
 				c.nextLocal = i + 1
