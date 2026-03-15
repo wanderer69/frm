@@ -57,6 +57,26 @@ func (ht *HashTable) hash(key string) uint32 {
 	return h.Sum32()
 }
 
+/*
+func add(newBuckets []*Entry, index uint32, key string, value value.Value) bool {
+	entry := newBuckets[index]
+
+	// Check for existing key
+	for e := entry; e != nil; e = e.Next {
+		if e.Key == key {
+			e.Values.Add(value)
+			return true
+		}
+	}
+
+	// New key
+	newEntry := &Entry{Key: key, Next: entry, Values: &list.List{}}
+	newEntry.Values.Add(value)
+	newBuckets[index] = newEntry
+	//ht.size++
+	return false
+}
+*/
 // resize doubles the capacity of the hash table and rehashes all entries.
 func (ht *HashTable) resize() {
 	newCapacity := ht.capacity * 2
@@ -65,7 +85,14 @@ func (ht *HashTable) resize() {
 	for _, entry := range ht.buckets {
 		for e := entry; e != nil; e = e.Next {
 			index := ht.hash(e.Key) % uint32(newCapacity)
-			newBuckets[index] = e
+			ee := newBuckets[index]
+			if ee == nil {
+				newBuckets[index] = e
+				continue
+			}
+			// New key
+			newEntry := &Entry{Key: e.Key, Next: entry, Values: e.Values}
+			newBuckets[index] = newEntry
 		}
 	}
 

@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/wanderer69/frm/pkg/frame"
+	"github.com/wanderer69/frm/pkg/value"
 	valueType "github.com/wanderer69/frm/pkg/value_types"
 )
 
@@ -119,6 +120,20 @@ func TestFrameII(t *testing.T) {
 	if values.Size() != 1 {
 		t.Errorf("Expected 2 values, got %d", values.Size())
 	}
+}
+
+func TestFrameIII(t *testing.T) {
+	f := frame.NewFrame("token_1")
+	f.Slots.Put("id", &valueType.ValueString{String: "1"})
+	f.Slots.Put("lemma", &valueType.ValueString{String: "t.Lemma"})
+	f.Slots.Put("pos", &valueType.ValueString{String: "t.UPos"})
+	f.Slots.Put("dep_rel", &valueType.ValueString{String: "t.DepRel"})
+	f.Slots.Put("form", &valueType.ValueString{String: "t.Form"})
+	f.Slots.Put("feats", &valueType.ValueString{String: "t.Feats"})
+	f.Slots.Put("head_id", &valueType.ValueString{String: "2"})
+	headIDRaw, err := f.Slots.Get("head_id").Get(0).To(value.ValueTypeInt)
+	require.NoError(t, err)
+	require.NotNil(t, headIDRaw)
 }
 
 // GetCollidingStrings returns a list of strings that have the same FNV-1a 32-bit hash value.
