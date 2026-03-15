@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/wanderer69/frm/internal/bytecode"
+	"github.com/wanderer69/frm/pkg/constants"
 	"github.com/wanderer69/frm/pkg/frame"
 	"github.com/wanderer69/frm/pkg/list"
 	"github.com/wanderer69/frm/pkg/value"
@@ -158,7 +159,11 @@ func List(v any) *list.List {
 type valueNil struct {
 }
 
-var ValueNil = &valueNil{}
+func init() {
+	constants.ValueNil = &valueNil{}
+}
+
+var ValueNil = &valueNil{} //&valueNil{}
 
 func (v *valueNil) Type() value.ValueType {
 	return value.ValueTypeNil

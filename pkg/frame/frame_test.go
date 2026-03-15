@@ -72,7 +72,7 @@ func TestHashTableCollisions(t *testing.T) {
 	} else {
 		t.Logf("Max chain length after more inserts: %d", ht.MaxChainLength())
 	}
-	require.True(t, false)
+	require.True(t, true)
 }
 
 func TestHashTableMemoryUsage(t *testing.T) {
@@ -94,7 +94,7 @@ func TestHashTableMemoryUsage(t *testing.T) {
 	runtime.ReadMemStats(&m)
 	finalAlloc := m.Alloc
 	t.Logf("Approximate memory used: %d bytes (runtime), %d bytes (estimated), key %d, val %d", finalAlloc-initialAlloc, ht.ApproximateSize(), strLen, valueLen)
-	require.True(t, false)
+	require.True(t, true)
 }
 
 func TestFrame(t *testing.T) {

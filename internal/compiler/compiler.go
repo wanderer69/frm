@@ -28,27 +28,31 @@ func (c *Compiler) Compile(prog *ast.Program) []*bytecode.Chunk {
 	for _, d := range prog.Decls {
 		c.chunk = bytecode.NewChunk()
 		c.nextIter = 0
-		fn := d.(*ast.FunctionDecl)
-		for i, p := range fn.Params {
-			c.chunk.Locals[p] = i
-			c.nextLocal = i + 1
-			//c.chunk.sortedArgs[i] = i
+		switch d.(type) {
+		case *ast.FramesDecl:
+		case *ast.FunctionDecl:
+			fn := d.(*ast.FunctionDecl)
+			for i, p := range fn.Params {
+				c.chunk.Locals[p] = i
+				c.nextLocal = i + 1
+				//c.chunk.sortedArgs[i] = i
+			}
+			c.chunk.SortedArgs = make([]int, len(c.chunk.Locals))
+			i := 0
+			for range c.chunk.Locals {
+				c.chunk.SortedArgs[i] = i
+				i++
+			}
+			for _, st := range fn.Body {
+				c.compileStmt(st)
+			}
+			c.chunk.Emit(bytecode.OpReturn, 0)
+			c.chunk.Name = fn.Name
+			//c.chunk.Locals = c.chunk.Locals
+			c.chunk.IterNumbers = c.nextIter
+			c.chunk.LocalNumbers = c.nextLocal
+			c.chunks = append(c.chunks, c.chunk)
 		}
-		c.chunk.SortedArgs = make([]int, len(c.chunk.Locals))
-		i := 0
-		for range c.chunk.Locals {
-			c.chunk.SortedArgs[i] = i
-			i++
-		}
-		for _, st := range fn.Body {
-			c.compileStmt(st)
-		}
-		c.chunk.Emit(bytecode.OpReturn, 0)
-		c.chunk.Name = fn.Name
-		//c.chunk.Locals = c.chunk.Locals
-		c.chunk.IterNumbers = c.nextIter
-		c.chunk.LocalNumbers = c.nextLocal
-		c.chunks = append(c.chunks, c.chunk)
 	}
 	return c.chunks
 }

@@ -5,8 +5,10 @@ import (
 	"hash/fnv"
 	"unsafe"
 
+	constants "github.com/wanderer69/frm/pkg/constants"
 	"github.com/wanderer69/frm/pkg/list"
 	"github.com/wanderer69/frm/pkg/value"
+	//valuetypes "github.com/wanderer69/frm/pkg/value_types"
 )
 
 // Entry represents a node in the linked list for collision resolution.
@@ -231,4 +233,20 @@ func (f *Frame) Item(n int) *Entry {
 
 func (f *Frame) Len() int {
 	return len(f.Slots.buckets)
+}
+
+func (f *Frame) Set(key string, value value.Value) {
+	f.Slots.Put(key, value)
+}
+
+func (f *Frame) Get(key string, args ...int) value.Value {
+	pos := 0
+	if len(args) != 0 {
+		pos = args[0]
+	}
+	l := f.Slots.Get(key)
+	if l == nil {
+		return constants.ValueNil
+	}
+	return l.Get(pos)
 }

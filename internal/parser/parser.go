@@ -83,6 +83,9 @@ func (p *Parser) parseFunction() *ast.FunctionDecl {
 	var body []ast.Stmt
 	for !(p.cur.Type == lexer.RBRACE) {
 		body = append(body, p.parseStmt())
+		if p.cur.Type == lexer.RBRACE {
+			break
+		}
 		p.expect(lexer.SEMICOLON, "")
 	}
 	p.expect(lexer.RBRACE, "")
