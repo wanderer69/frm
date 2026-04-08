@@ -1,4 +1,4 @@
-package frame
+package framelt
 
 import (
 	"fmt"
@@ -6,16 +6,16 @@ import (
 	"unsafe"
 
 	constants "github.com/wanderer69/frm/pkg/constants"
-	"github.com/wanderer69/frm/pkg/list"
 	"github.com/wanderer69/frm/pkg/value"
-	//valuetypes "github.com/wanderer69/frm/pkg/value_types"
+	valueType "github.com/wanderer69/frm/pkg/value_types"
 )
 
 // Entry represents a node in the linked list for collision resolution.
 type Entry struct {
-	Key    string
-	Values *list.List
-	Next   *Entry
+	Key string
+	//	Values *list.List
+	Next  *Entry
+	Value string
 }
 
 func (e *Entry) Iterate() func() (*Entry, bool) {
@@ -59,26 +59,6 @@ func (ht *HashTable) hash(key string) uint32 {
 	return h.Sum32()
 }
 
-/*
-func add(newBuckets []*Entry, index uint32, key string, value value.Value) bool {
-	entry := newBuckets[index]
-
-	// Check for existing key
-	for e := entry; e != nil; e = e.Next {
-		if e.Key == key {
-			e.Values.Add(value)
-			return true
-		}
-	}
-
-	// New key
-	newEntry := &Entry{Key: key, Next: entry, Values: &list.List{}}
-	newEntry.Values.Add(value)
-	newBuckets[index] = newEntry
-	//ht.size++
-	return false
-}
-*/
 // resize doubles the capacity of the hash table and rehashes all entries.
 func (ht *HashTable) resize() {
 	newCapacity := ht.capacity * 2
@@ -90,11 +70,11 @@ func (ht *HashTable) resize() {
 			index := ht.hash(e.Key) % uint32(newCapacity)
 			ee := newBuckets[index]
 			if ee == nil {
-				newBuckets[index] = &Entry{Key: e.Key, Values: e.Values}
+				newBuckets[index] = &Entry{Key: e.Key, Value: e.Value}
 				continue
 			}
 			// New key
-			newEntry := &Entry{Key: e.Key, Next: ee, Values: e.Values}
+			newEntry := &Entry{Key: e.Key, Next: ee, Value: e.Value}
 			newBuckets[index] = newEntry
 		}
 	}
@@ -112,22 +92,23 @@ func (ht *HashTable) MaxChainLen() int {
 }
 
 // Put adds or appends a value to the list for the given key.
-func (ht *HashTable) Put(key string, value value.Value) {
+func (ht *HashTable) Put(key string, value string) {
 	index := ht.hash(key) % uint32(ht.capacity)
 	entry := ht.buckets[index]
 
 	// Check for existing key
 	for e := entry; e != nil; e = e.Next {
+		//fmt.Printf("%s %s\r\n", key, e.Key)
 		if e.Key == key {
-			e.Values.Add(value)
+			e.Value = value
 			ht.checkResize()
 			return
 		}
 	}
+	//fmt.Printf("%s \r\n", key)
 
 	// New key
-	newEntry := &Entry{Key: key, Next: entry, Values: &list.List{}}
-	newEntry.Values.Add(value)
+	newEntry := &Entry{Key: key, Next: entry, Value: value}
 	ht.buckets[index] = newEntry
 	ht.size++
 
@@ -152,16 +133,16 @@ func (ht *HashTable) checkResize() {
 }
 
 // Get retrieves the list of values for the given key.
-func (ht *HashTable) Get(key string) *list.List {
+func (ht *HashTable) Get(key string) (string, bool) {
 	index := ht.hash(key) % uint32(ht.capacity)
 	entry := ht.buckets[index]
 
 	for e := entry; e != nil; e = e.Next {
 		if e.Key == key {
-			return e.Values
+			return e.Value, true
 		}
 	}
-	return nil
+	return "", false
 }
 
 // MaxChainLength returns the length of the longest chain.
@@ -184,7 +165,7 @@ func (ht *HashTable) ApproximateSize() uintptr {
 	size := unsafe.Sizeof(*ht) + uintptr(ht.capacity)*unsafe.Sizeof((*Entry)(nil))
 	for _, entry := range ht.buckets {
 		for e := entry; e != nil; e = e.Next {
-			size += unsafe.Sizeof(*e) + uintptr(e.Values.Capacity())*unsafe.Sizeof(interface{}(nil)) + uintptr(len(e.Key))
+			size += unsafe.Sizeof(*e) + uintptr(len(e.Value)) + uintptr(len(e.Key))
 		}
 	}
 	return size
@@ -212,12 +193,7 @@ func (f *Frame) String() string {
 		}
 		s = s + " ["
 		for e := entry; e != nil; e = e.Next {
-			s = s + e.Key
-			e.Values.Find(func(value value.Value) (bool, bool) {
-				s = s + fmt.Sprintf(" %s ", value)
-				return false, false
-			})
-			s = s + " "
+			s = s + e.Key + " " + e.Value //+ " "
 		}
 		s = s + "]"
 	}
@@ -237,17 +213,19 @@ func (f *Frame) Len() int {
 }
 
 func (f *Frame) Set(key string, value value.Value) {
-	f.Slots.Put(key, value)
+	f.Slots.Put(key, value.Type().ToString())
 }
 
 func (f *Frame) Get(key string, args ...int) value.Value {
-	pos := 0
-	if len(args) != 0 {
-		pos = args[0]
-	}
-	l := f.Slots.Get(key)
-	if l == nil {
+	/*
+		pos := 0
+		if len(args) != 0 {
+			pos = args[0]
+		}
+	*/
+	l, ok := f.Slots.Get(key)
+	if !ok {
 		return constants.ValueNil
 	}
-	return l.Get(pos)
+	return &valueType.ValueString{String: l}
 }
