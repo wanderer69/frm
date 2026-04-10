@@ -100,10 +100,10 @@ func TestHashTableMemoryUsage(t *testing.T) {
 
 func TestFrame(t *testing.T) {
 	f := NewFrame("testFrame")
-	f.Slots.Put("slot1", "val1")
-	f.Slots.Put("slot1", "val2")
+	f.slots.Put("slot1", "val1")
+	f.slots.Put("slot1", "val2")
 
-	values, ok := f.Slots.Get("slot1")
+	values, ok := f.slots.Get("slot1")
 	require.True(t, ok)
 	if len(values) != 4 {
 		t.Errorf("Expected 2 values, got %d", len(values))
@@ -113,12 +113,12 @@ func TestFrame(t *testing.T) {
 func TestFrameII(t *testing.T) {
 	// фрейм(наименование."query1_rel1", subj."фрейм1", rel."parent", obj."?X")
 	f := NewFrame("")
-	f.Slots.Put("subj", "фрейм1")
-	f.Slots.Put("rel", "parent")
-	f.Slots.Put("наименование", "query1_rel1")
-	f.Slots.Put("obj", "?X")
+	f.slots.Put("subj", "фрейм1")
+	f.slots.Put("rel", "parent")
+	f.slots.Put("наименование", "query1_rel1")
+	f.slots.Put("obj", "?X")
 
-	values, ok := f.Slots.Get("наименование")
+	values, ok := f.slots.Get("наименование")
 	require.True(t, ok)
 	if len(values) != 11 {
 		t.Errorf("Expected 2 values, got %d", len(values))
@@ -127,15 +127,15 @@ func TestFrameII(t *testing.T) {
 
 func TestFrameIII(t *testing.T) {
 	f := NewFrame("token_1")
-	f.Slots.Put("id", "1")
-	f.Slots.Put("lemma", "t.Lemma")
-	f.Slots.Put("pos", "t.UPos")
-	f.Slots.Put("dep_rel", "t.DepRel")
-	f.Slots.Put("form", "t.Form")
-	f.Slots.Put("feats", "t.Feats")
-	f.Slots.Put("head_id", "2")
+	f.slots.Put("id", "1")
+	f.slots.Put("lemma", "t.Lemma")
+	f.slots.Put("pos", "t.UPos")
+	f.slots.Put("dep_rel", "t.DepRel")
+	f.slots.Put("form", "t.Form")
+	f.slots.Put("feats", "t.Feats")
+	f.slots.Put("head_id", "2")
 	fmt.Printf("%v\r\n", f.String())
-	headIDRaw, ok := f.Slots.Get("head_id") //.Get(0).To(value.ValueTypeInt)
+	headIDRaw, ok := f.slots.Get("head_id") //.Get(0).To(value.ValueTypeInt)
 	require.True(t, ok)
 	//	require.NoError(t, err)
 	require.NotNil(t, headIDRaw)
@@ -149,15 +149,41 @@ func GetCollidingStrings() [][]string {
 	}
 }
 
-/*
-// To verify:
-func computeFNV(s string) uint32 {
-	h := fnv.New32a()
-	h.Write([]byte(s))
-	return h.Sum32()
+func TestFrameIV(t *testing.T) {
+	fdb := NewFrameDB()
+
+	for j := 0; j < 100; j++ {
+		f, err := fdb.NewFrame("frame" + fmt.Sprintf("%d", j))
+		require.NoError(t, err)
+		for i := 0; i < 100; i++ {
+			nameSlot := "slot" + string(rune('0'+i))
+			ef, err := fdb.AddSlot(f, nameSlot, fmt.Sprintf("%d_%d", j, i))
+			require.NoError(t, err)
+			require.Equal(t, f, ef)
+		}
+	}
+	for j := 0; j < 100; j++ {
+		f, err := fdb.NewFrame("frame_" + fmt.Sprintf("%d", j))
+		require.NoError(t, err)
+		for i := 0; i < 100; i++ {
+			nameSlot := "slot_" + string(rune('0'+i))
+			ef, err := fdb.AddSlotByName(f.name, nameSlot, fmt.Sprintf("%d_%d", j, i))
+			require.NoError(t, err)
+			require.Equal(t, f, ef)
+		}
+	}
+	for j := 0; j < 100; j++ {
+		f := fdb.GetFrameByName("frame_" + fmt.Sprintf("%d", j))
+		require.NotNil(t, f)
+		f = fdb.GetFrameByName("frame" + fmt.Sprintf("%d", j))
+		require.NotNil(t, f)
+		for i := 0; i < 100; i++ {
+			nameSlot := "slot_" + string(rune('0'+i))
+			efs := fdb.GetFrameBySlotByName(nameSlot)
+			require.NotNil(t, efs)
+			nameSlot = "slot_" + string(rune('0'+i))
+			efs = fdb.GetFrameBySlotByName(nameSlot)
+			require.NotNil(t, efs)
+		}
+	}
 }
-*/
-// Example usage in a test or main:
-// hash1 := computeFNV("oQBrwu")
-// hash2 := computeFNV("07bPuv")
-// // hash1 == hash2

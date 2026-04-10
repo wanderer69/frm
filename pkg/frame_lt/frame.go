@@ -3,6 +3,8 @@ package framelt
 import (
 	"fmt"
 	"hash/fnv"
+	"slices"
+	"sync"
 	"unsafe"
 
 	constants "github.com/wanderer69/frm/pkg/constants"
@@ -173,21 +175,29 @@ func (ht *HashTable) ApproximateSize() uintptr {
 
 // Frame represents the frame with a name and slots hash table.
 type Frame struct {
-	Name  string
-	Slots *HashTable
+	name  string
+	slots *HashTable
 }
 
 // NewFrame creates a new frame.
 func NewFrame(name string) *Frame {
 	return &Frame{
-		Name:  name,
-		Slots: NewHashTable(),
+		name:  name,
+		slots: NewHashTable(),
 	}
 }
 
+func (f *Frame) Name() string {
+	return f.name
+}
+
+func (f *Frame) Rename(name string) {
+	f.name = name
+}
+
 func (f *Frame) String() string {
-	s := fmt.Sprintf("%s {", f.Name)
-	for _, entry := range f.Slots.buckets {
+	s := fmt.Sprintf("%s {", f.name)
+	for _, entry := range f.slots.buckets {
 		if entry == nil {
 			continue
 		}
@@ -202,30 +212,141 @@ func (f *Frame) String() string {
 }
 
 func (f *Frame) Item(n int) *Entry {
-	if n < 0 || n > len(f.Slots.buckets) {
+	if n < 0 || n > len(f.slots.buckets) {
 		return nil
 	}
-	return f.Slots.buckets[n]
+	return f.slots.buckets[n]
 }
 
 func (f *Frame) Len() int {
-	return len(f.Slots.buckets)
+	return len(f.slots.buckets)
 }
 
 func (f *Frame) Set(key string, value value.Value) {
-	f.Slots.Put(key, value.Type().ToString())
+	f.slots.Put(key, value.Type().ToString())
 }
 
-func (f *Frame) Get(key string, args ...int) value.Value {
-	/*
-		pos := 0
-		if len(args) != 0 {
-			pos = args[0]
-		}
-	*/
-	l, ok := f.Slots.Get(key)
+func (f *Frame) Get(key string) value.Value {
+	l, ok := f.slots.Get(key)
 	if !ok {
 		return constants.ValueNil
 	}
 	return &valueType.ValueString{String: l}
+}
+
+func (f *Frame) Iter(fn func(key string, value string)) {
+	for _, entry := range f.slots.buckets {
+		if entry == nil {
+			continue
+		}
+		for e := entry; e != nil; e = e.Next {
+			if fn != nil {
+				fn(e.Key, e.Value)
+			}
+		}
+	}
+}
+
+type FrameDB struct {
+	frames         []*Frame
+	mu             sync.Mutex
+	frameByName    map[string]*Frame
+	framesBySlot   map[string][]*Frame
+	framePosByName map[string]int
+}
+
+func NewFrameDB() *FrameDB {
+	return &FrameDB{
+		frameByName:    make(map[string]*Frame),
+		framesBySlot:   make(map[string][]*Frame),
+		framePosByName: make(map[string]int),
+		mu:             sync.Mutex{},
+	}
+}
+
+func (fdb *FrameDB) NewFrame(name string) (*Frame, error) {
+	fdb.mu.Lock()
+	defer fdb.mu.Unlock()
+	_, ok := fdb.frameByName[name]
+	if ok {
+		return nil, fmt.Errorf("duplicate frame name %s", name)
+	}
+	f := NewFrame(name)
+	fdb.frameByName[name] = f
+	fdb.frames = append(fdb.frames, f)
+	fdb.framePosByName[name] = len(fdb.frames)
+
+	return f, nil
+}
+
+func (fdb *FrameDB) AddSlotByName(name string, slotName string, value string) (*Frame, error) {
+	fdb.mu.Lock()
+	defer fdb.mu.Unlock()
+	f, ok := fdb.frameByName[name]
+	if !ok {
+		return nil, fmt.Errorf("not found frame name %s", name)
+	}
+	f.slots.Put(slotName, value)
+
+	fl, ok := fdb.framesBySlot[slotName]
+	if !ok {
+		fl = []*Frame{}
+	}
+	fl = append(fl, f)
+	fdb.framesBySlot[slotName] = fl
+
+	return f, nil
+}
+
+func (fdb *FrameDB) AddSlot(f *Frame, slotName string, value string) (*Frame, error) {
+	fdb.mu.Lock()
+	defer fdb.mu.Unlock()
+	_, ok := fdb.frameByName[f.name]
+	if !ok {
+		return nil, fmt.Errorf("not found frame name %s", f.name)
+	}
+	f.slots.Put(slotName, value)
+
+	fl, ok := fdb.framesBySlot[slotName]
+	if !ok {
+		fl = []*Frame{}
+	}
+	fl = append(fl, f)
+	fdb.framesBySlot[slotName] = fl
+
+	return f, nil
+}
+
+func (fdb *FrameDB) GetFrameBySlotByName(slotName string) []*Frame {
+	fdb.mu.Lock()
+	defer fdb.mu.Unlock()
+	return fdb.framesBySlot[slotName]
+}
+
+func (fdb *FrameDB) GetFrameByName(name string) *Frame {
+	fdb.mu.Lock()
+	defer fdb.mu.Unlock()
+	return fdb.frameByName[name]
+}
+
+func (fdb *FrameDB) DeleteFrameByName(name string) (*Frame, error) {
+	fdb.mu.Lock()
+	defer fdb.mu.Unlock()
+	f, ok := fdb.frameByName[name]
+	if ok {
+		return nil, fmt.Errorf("not found frame name %s", name)
+	}
+	delete(fdb.frameByName, name)
+
+	f.Iter(func(key, value string) {
+		delete(fdb.framesBySlot, key)
+	})
+
+	pos, ok := fdb.framePosByName[name]
+	if ok {
+		return nil, fmt.Errorf("not found frame name %s", name)
+	}
+	fdb.frames = slices.Delete(fdb.frames, pos, pos)
+
+	return f, nil
 }
