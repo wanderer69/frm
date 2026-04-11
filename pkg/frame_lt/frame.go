@@ -247,6 +247,61 @@ func (f *Frame) Iter(fn func(key string, value string)) {
 	}
 }
 
+func (f *Frame) Iterator() func() (string, string, bool) {
+	i := 0
+	state := 0
+	var entry, e *Entry
+	return func() (string, string, bool) {
+		var isFinished bool
+		for {
+			switch state {
+			case 0:
+				if isFinished {
+					return "", "", isFinished
+				}
+				if len(f.slots.buckets) <= i+1 {
+					isFinished = true
+				}
+				entry = f.slots.buckets[i]
+				e = entry
+				i = i + 1
+				//				if !isFinished {
+				if f.slots.buckets[i] == nil {
+					for j := i; j < len(f.slots.buckets); j++ {
+						if len(f.slots.buckets) <= j+1 {
+							isFinished = true
+						}
+						i = j
+						entry = f.slots.buckets[j]
+						if entry != nil {
+							break
+						}
+					}
+				}
+				//				}
+				/*
+					if entry == nil {
+						continue
+					}
+				*/
+				state = 1
+			case 1:
+				if e == nil {
+					if isFinished {
+						return "", "", isFinished
+					}
+					state = 0
+					continue
+				}
+				key := e.Key
+				value := e.Value
+				e = e.Next
+				return key, value, isFinished
+			}
+		}
+	}
+}
+
 type FrameDB struct {
 	frames         []*Frame
 	mu             sync.Mutex

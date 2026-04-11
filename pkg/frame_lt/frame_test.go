@@ -187,3 +187,30 @@ func TestFrameIV(t *testing.T) {
 		}
 	}
 }
+
+func TestFrameVI(t *testing.T) {
+	f := NewFrame("token_1")
+	f.slots.Put("id", "1")
+	f.slots.Put("lemma", "t.Lemma")
+	f.slots.Put("pos", "t.UPos")
+	f.slots.Put("dep_rel", "t.DepRel")
+	f.slots.Put("form", "t.Form")
+	f.slots.Put("feats", "t.Feats")
+	f.slots.Put("head_id", "2")
+
+	fmt.Printf("%v\r\n", f.String())
+	/*
+		headIDRaw, ok := f.slots.Get("head_id") //.Get(0).To(value.ValueTypeInt)
+		require.True(t, ok)
+		//	require.NoError(t, err)
+		require.NotNil(t, headIDRaw)
+	*/
+	fi := f.Iterator()
+	for {
+		k, v, flag := fi()
+		fmt.Printf("%v %v %v\r\n", k, v, flag)
+		if flag {
+			break
+		}
+	}
+}
