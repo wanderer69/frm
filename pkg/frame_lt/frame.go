@@ -234,6 +234,10 @@ func (f *Frame) Get(key string) value.Value {
 	return &valueType.ValueString{String: l}
 }
 
+func (f *Frame) Find(key string) (string, bool) {
+	return f.slots.Get(key)
+}
+
 func (f *Frame) Iter(fn func(key string, value string)) {
 	for _, entry := range f.slots.buckets {
 		if entry == nil {
