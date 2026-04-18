@@ -242,17 +242,21 @@ func (f *Frame) Store(key string, value string) {
 	f.slots.Put(key, value)
 }
 
-func (f *Frame) Iter(fn func(key string, value string)) {
+func (f *Frame) Iter(fn func(key string, value string) error) error {
 	for _, entry := range f.slots.buckets {
 		if entry == nil {
 			continue
 		}
 		for e := entry; e != nil; e = e.Next {
 			if fn != nil {
-				fn(e.Key, e.Value)
+				err := fn(e.Key, e.Value)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
+	return nil
 }
 
 func (f *Frame) Iterator() func() (string, string, bool) {
@@ -401,8 +405,9 @@ func (fdb *FrameDB) DeleteFrameByName(name string) (*Frame, error) {
 	}
 	delete(fdb.frameByName, name)
 
-	f.Iter(func(key, value string) {
+	f.Iter(func(key, value string) error {
 		delete(fdb.framesBySlot, key)
+		return nil
 	})
 
 	pos, ok := fdb.framePosByName[name]
