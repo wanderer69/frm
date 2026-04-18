@@ -201,11 +201,11 @@ func (f *Frame) String() string {
 		if entry == nil {
 			continue
 		}
-		s = s + " ["
 		for e := entry; e != nil; e = e.Next {
+			s = s + " ["
 			s = s + e.Key + " " + e.Value //+ " "
+			s = s + "]"
 		}
-		s = s + "]"
 	}
 	s = s + "}"
 	return s
